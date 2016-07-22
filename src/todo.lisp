@@ -11,7 +11,7 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
-(print (heroku-getenv "DATABASE_URL"))
+(print (sb-posix:getenv "DATABASE_URL"))
 (defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
 
 (defun db-params ()
@@ -24,7 +24,6 @@
          (host (first (cl-ppcre:split ":" (first (cl-ppcre:split "/" (second (cl-ppcre:split "@" url)))))))
          (database (second (cl-ppcre:split "/" (second (cl-ppcre:split "@" url))))))
       ;(list "todopglisp" "Rajasegar" "" "localhost")
-      (print (list database user password host))
       (list database user password host)))
 
 
@@ -43,8 +42,6 @@
              (name :type varchar :default "")
              (done :type boolean :default nil))))))
 
-;(defun start-server (port) 
-;  (start (make-instance 'easy-acceptor :port port)))
 
 (defmacro todo-page ((&key title script) &body body)
   `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
@@ -76,7 +73,9 @@
 ;; Handlers
 
 (define-easy-handler (app :uri "/") ()
-    (todo-page (:title "TodoList")
+    (todo-page (:title "TodoList"
+                :script (ps
+                          (chain console (log "Hello"))))
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
                  (dolist (item (with-connection (db-params)
@@ -103,4 +102,6 @@
     (redirect "/"))
 
 
+;(defun start-server (port) 
+;  (start (make-instance 'easy-acceptor :port port)))
 ;(start-server 3000)
