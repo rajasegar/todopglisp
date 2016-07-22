@@ -1,6 +1,6 @@
 ;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern))
 
-;(defpackage :todopglisp
+;(defpackage :example
 ;  (:use :cl :cl-who :hunchentoot :parenscript :postmodern))
 
 (in-package :example)
@@ -13,9 +13,13 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
+(defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
+
 (defun db-params ()
   "Heroku database url format is postgres://username:password@host:port/database_name"
-  (let* ((url (second (cl-ppcre:split "//" (heroku-getenv "DATABASE_URL"))))
+  (let* (
+         ;(url (second (cl-ppcre:split "//" (heroku-getenv "DATABASE_URL"))))
+         (url (second (cl-ppcre:split "//" *heroku-pg-url*)))
          (user (first (cl-ppcre:split ":" (first (cl-ppcre:split "@" url)))))
          (password (second (cl-ppcre:split ":" (first (cl-ppcre:split "@" url)))))
          (host (first (cl-ppcre:split ":" (first (cl-ppcre:split "/" (second (cl-ppcre:split "@" url)))))))
