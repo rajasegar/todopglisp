@@ -48,8 +48,7 @@
 ;  (start (make-instance 'easy-acceptor :port port)))
 
 (defmacro todo-page ((&key title script) &body body)
-  `(cl-who:with-html-output-to-string
-     (*standard-output* nil :prologue t :indent t)
+  `(cl-who:with-html-output-to-string (s)
         (:html :lang "en"
             (:head
               (:meta :charset "utf-8")
