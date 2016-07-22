@@ -29,7 +29,7 @@
   (postmodern:with-connection (db-params)
       (postmodern:query (:insert-into 'todo :set 'name name))))
 
-(setf (html-mode) :html5)
+;(setf (html-mode) :html5)
 
 ;; Create Database Schema
 (postmodern:with-connection (db-params)
