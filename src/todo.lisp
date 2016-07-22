@@ -38,7 +38,7 @@
 
 ;; Create Database Schema
 (postmodern:with-connection (db-params)
-    (unless (table-exists-p "todo")
+    (unless (postmodern:table-exists-p "todo")
         (postmodern:query (:create-table todo
             ((id :type serial :primary-key t)
              (name :type varchar :default "")
