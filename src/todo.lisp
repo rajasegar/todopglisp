@@ -39,11 +39,11 @@
              (name :type varchar :default "")
              (done :type boolean :default FALSE))))))
 
-(defun start-server (port) 
-  (start (make-instance 'easy-acceptor :port port)))
+;(defun start-server (port) 
+;  (start (make-instance 'easy-acceptor :port port)))
 
 (defmacro todo-page ((&key title script) &body body)
-  `(with-html-output-to-string
+  `(cl-who:with-html-output-to-string
      (*standard-output* nil :prologue t :indent t)
         (:html :lang "en"
             (:head
@@ -72,7 +72,7 @@
               
 ;; Handlers
 
-(define-easy-handler (app :uri "/") ()
+(hunchentoot:define-easy-handler (app :uri "/") ()
     (todo-page (:title "TodoList"
                 :script (ps ; console.log
                           (chain console (log "Hello"))))
@@ -90,12 +90,12 @@
                     (:p :class "text-right"
                         (:input :type "submit" :value (format nil "Add Todo #~d" (+ 1 (row-count))) :class "btn btn-primary btn-lg")))))
 
-(define-easy-handler (todo-added :uri "/todo-added") (name)
+(hunchentoot:define-easy-handler (todo-added :uri "/todo-added") (name)
     (unless (or (null name) (zerop (length name)))
       (add-todo name))
     (redirect "/"))
 
-(define-easy-handler (todo-delete :uri "/delete") (name)
+(hunchentoot:define-easy-handler (todo-delete :uri "/delete") (name)
     ; delete the item here
     (postmodern:with-connection (db-params)
         (postmodern:query (:delete-from 'todo :where (:= 'name name))))
