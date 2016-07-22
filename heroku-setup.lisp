@@ -2,9 +2,9 @@
 
 (print ">>> Building system....")
 
-(load (merge-pathnames "todopglisp.asd" *build-dir*))
+(load (merge-pathnames "example.asd" *build-dir*))
 
-(ql:quickload :todopglisp)
+(ql:quickload :example)
 
 ;;; Redefine / extend heroku-toplevel here if necessary
 

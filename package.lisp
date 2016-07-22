@@ -1,4 +1,4 @@
 ;;;; package.lisp
 
-(defpackage #:todopglisp
+(defpackage #:example
   (:use #:cl))

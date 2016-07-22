@@ -3,7 +3,7 @@
 ;(defpackage :todopglisp
 ;  (:use :cl :cl-who :hunchentoot :parenscript :postmodern))
 
-(in-package :todopglisp)
+(in-package :example)
 
 ;; Utils
 (defun heroku-getenv (target)

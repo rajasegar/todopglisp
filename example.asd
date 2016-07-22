@@ -1,4 +1,4 @@
-(asdf:defsystem #:todopglisp
+(asdf:defsystem #:example
     :serial t
     :description "Todo List using Common Lisp with Postgres database"
     :depends-on (#:hunchentoot
