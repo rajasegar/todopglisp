@@ -42,7 +42,7 @@
         (postmodern:query (:create-table todo
             ((id :type serial :primary-key t)
              (name :type varchar :default "")
-             (done :type boolean :default FALSE))))))
+             (done :type boolean :default nil))))))
 
 ;(defun start-server (port) 
 ;  (start (make-instance 'easy-acceptor :port port)))
