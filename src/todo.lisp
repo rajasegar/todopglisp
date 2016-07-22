@@ -21,6 +21,7 @@
          (host (first (cl-ppcre:split ":" (first (cl-ppcre:split "/" (second (cl-ppcre:split "@" url)))))))
          (database (second (cl-ppcre:split "/" (second (cl-ppcre:split "@" url))))))
       ;(list "todopglisp" "Rajasegar" "" "localhost")
+      (print (list database user password host))
       (list database user password host)))
 
 
