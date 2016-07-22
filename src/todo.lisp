@@ -80,7 +80,8 @@
 (hunchentoot:define-easy-handler (app :uri "/") ()
     (todo-page (:title "TodoList"
                 :script (ps ; console.log
-                          (chain console (log "Hello"))))
+                          ;(chain console (log "Hello"))
+                          ))
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
                  (dolist (item (postmodern:with-connection (db-params)
