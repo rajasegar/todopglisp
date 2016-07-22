@@ -24,24 +24,17 @@
       (list database user password host)))
 
 
-(defclass todo ()
-  ((name :reader name
-         :initarg :name)
-   (done :accessor done
-         :initform nil)))
-
-(defvar *todolist* '())
 
 (defun add-todo (name)
-  (with-connection (db-params)
-      (query (:insert-into 'todo :set 'name name))))
+  (postmodern:with-connection (db-params)
+      (postmodern:query (:insert-into 'todo :set 'name name))))
 
 (setf (html-mode) :html5)
 
 ;; Create Database Schema
-(with-connection (db-params)
+(postmodern:with-connection (db-params)
     (unless (table-exists-p "todo")
-        (query (:create-table todo
+        (postmodern:query (:create-table todo
             ((id :type serial :primary-key t)
              (name :type varchar :default "")
              (done :type boolean :default FALSE))))))
@@ -72,8 +65,8 @@
             ,@body))))))))
 
 (defun row-count ()
-  (with-connection (db-params)
-        (query (:select (:count '*) :from 'todo) :single)))
+  (postmodern:with-connection (db-params)
+        (postmodern:query (:select (:count '*) :from 'todo) :single)))
 
 
               
@@ -85,8 +78,8 @@
                           (chain console (log "Hello"))))
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
-                 (dolist (item (with-connection (db-params)
-                    (query (:select 'name 'done :from 'todo))))
+                 (dolist (item (postmodern:with-connection (db-params)
+                    (postmodern:query (:select 'name 'done :from 'todo))))
                    (htm
                      (:li
                        (fmt "~a" (first item))
@@ -104,8 +97,8 @@
 
 (define-easy-handler (todo-delete :uri "/delete") (name)
     ; delete the item here
-    (with-connection (db-params)
-        (query (:delete-from 'todo :where (:= 'name name))))
+    (postmodern:with-connection (db-params)
+        (postmodern:query (:delete-from 'todo :where (:= 'name name))))
     (redirect "/"))
 
 
