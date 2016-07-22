@@ -3,6 +3,8 @@
 
 (in-package :example)
 
+#+sbcl (require :sb-posix)
+
 ;; Utils
 (defun heroku-getenv (target)
   #+ccl (ccl:getenv target)
@@ -11,7 +13,7 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
-(print (sb-ext:posix-getenv "DATABASE_URL"))
+(print (read-from-string (heroku-getenv "DATABASE_URL")))
 (defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
 
 (defun db-params ()
