@@ -1,7 +1,5 @@
 ;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern))
 
-;(defpackage :example
-;  (:use :cl :cl-who :hunchentoot :parenscript :postmodern))
 
 (in-package :example)
 
@@ -76,7 +74,7 @@
               
 ;; Handlers
 
-(hunchentoot:define-easy-handler (app :uri "/") ()
+(define-easy-handler (app :uri "/") ()
     (todo-page (:title "TodoList")
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
@@ -92,12 +90,12 @@
                     (:p :class "text-right"
                         (:input :type "submit" :value (format nil "Add Todo #~d" (+ 1 (row-count))) :class "btn btn-primary btn-lg")))))
 
-(hunchentoot:define-easy-handler (todo-added :uri "/todo-added") (name)
+(define-easy-handler (todo-added :uri "/todo-added") (name)
     (unless (or (null name) (zerop (length name)))
       (add-todo name))
     (redirect "/"))
 
-(hunchentoot:define-easy-handler (todo-delete :uri "/delete") (name)
+(define-easy-handler (todo-delete :uri "/delete") (name)
     ; delete the item here
     (postmodern:with-connection (db-params)
         (postmodern:query (:delete-from 'todo :where (:= 'name name))))
