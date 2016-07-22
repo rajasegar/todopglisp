@@ -11,6 +11,7 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
+(print (heroku-getenv "DATABASE_URL"))
 (defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
 
 (defun db-params ()
@@ -29,15 +30,15 @@
 
 
 (defun add-todo (name)
-  (postmodern:with-connection (db-params)
-      (postmodern:query (:insert-into 'todo :set 'name name))))
+  (with-connection (db-params)
+      (query (:insert-into 'todo :set 'name name))))
 
 ;(setf (html-mode) :html5)
 
 ;; Create Database Schema
-(postmodern:with-connection (db-params)
-    (unless (postmodern:table-exists-p "todo")
-        (postmodern:query (:create-table todo
+(with-connection (db-params)
+    (unless (table-exists-p "todo")
+        (query (:create-table todo
             ((id :type serial :primary-key t)
              (name :type varchar :default "")
              (done :type boolean :default nil))))))
@@ -67,8 +68,8 @@
             ,@body))))))))
 
 (defun row-count ()
-  (postmodern:with-connection (db-params)
-        (postmodern:query (:select (:count '*) :from 'todo) :single)))
+  (with-connection (db-params)
+        (query (:select (:count '*) :from 'todo) :single)))
 
 
               
@@ -78,8 +79,8 @@
     (todo-page (:title "TodoList")
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
-                 (dolist (item (postmodern:with-connection (db-params)
-                    (postmodern:query (:select 'name 'done :from 'todo))))
+                 (dolist (item (with-connection (db-params)
+                    (query (:select 'name 'done :from 'todo))))
                    (htm
                      (:li
                        (fmt "~a" (first item))
@@ -97,8 +98,8 @@
 
 (define-easy-handler (todo-delete :uri "/delete") (name)
     ; delete the item here
-    (postmodern:with-connection (db-params)
-        (postmodern:query (:delete-from 'todo :where (:= 'name name))))
+    (with-connection (db-params)
+        (query (:delete-from 'todo :where (:= 'name name))))
     (redirect "/"))
 
 
