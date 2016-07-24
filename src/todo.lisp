@@ -1,9 +1,7 @@
 ;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern))
-
+;(defpackage #:example (:use :cl :cl-who :hunchentoot :parenscript :postmodern))
 
 (in-package :example)
-
-#+sbcl (require :sb-posix)
 
 ;; Utils
 (defun heroku-getenv (target)
@@ -13,7 +11,6 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
-(print (read-from-string (heroku-getenv "DATABASE_URL")))
 (defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
 
 (defun db-params ()
@@ -90,7 +87,7 @@
                     (:p "Add a new task:"
                         (:input :class "form-control" :type "text" :name "name"))
                     (:p :class "text-right"
-                        (:input :type "submit" :value (format nil "Add Todo #~d" (+ 1 (row-count))) :class "btn btn-primary btn-lg")))))
+                        (:input :type "submit" :value (format nil "Add Todo #~d" (+ 1 (row-count))) :class "btn btn-success btn-lg")))))
 
 (define-easy-handler (todo-added :uri "/todo-added") (name)
     (unless (or (null name) (zerop (length name)))
@@ -104,6 +101,4 @@
     (redirect "/"))
 
 
-;(defun start-server (port) 
-;  (start (make-instance 'easy-acceptor :port port)))
-;(start-server 3000)
+;(start (make-instance 'easy-acceptor :port 3000))
