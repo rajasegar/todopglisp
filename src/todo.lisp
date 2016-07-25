@@ -1,7 +1,8 @@
-;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern))
-;(defpackage #:example (:use :cl :cl-who :hunchentoot :parenscript :postmodern))
+;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern :smackjack))
+;(defpackage #:example (:use :cl :cl-who :hunchentoot :parenscript :postmodern :smackjack))
 
 (in-package :example)
+
 
 ;; Utils
 (defun heroku-getenv (target)
@@ -22,8 +23,16 @@
          (password (second (cl-ppcre:split ":" (first (cl-ppcre:split "@" url)))))
          (host (first (cl-ppcre:split ":" (first (cl-ppcre:split "/" (second (cl-ppcre:split "@" url)))))))
          (database (second (cl-ppcre:split "/" (second (cl-ppcre:split "@" url))))))
-      ;(list "todopglisp" "Rajasegar" "" "localhost")
+      ;(list "todopglisp" "Rajasegar" "" "localhost")))
       (list database user password host)))
+
+(defparameter *ajax-processor*
+  (make-instance 'ajax-processor :server-uri "/api"))
+
+(defun-ajax toggle-done (name done) (*ajax-processor* :callback-data :response-text)
+    (with-connection (db-params)
+        (query (:update 'todo :set 'done '$1 :where (:= 'name name)) done))
+    (concatenate 'string "Todo status updated"))
 
 
 
@@ -52,6 +61,7 @@
                 :type "text/css"
                 :rel "stylesheet"
                 :href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
+              (str (generate-prologue *ajax-processor*))
               ,(when script
                  `(:script :type "text/javascript" (str, script))))
             (:body
@@ -73,19 +83,34 @@
 
 (define-easy-handler (app :uri "/") ()
     (todo-page (:title "TodoList"
-                :script (ps
-                          (chain console (log "Hello"))))
+                :script 
+                (ps
+                          (chain console (log "Hello"))
+                          (defun callback (response)
+                            (chain console (log response)))
+                          (chain document  (add-event-listener "click" (lambda (event)
+                                ;(chain console (log event))
+                                (let* ((target (@ event target))
+                                      (target-class (@ target class-name))
+                                      (target-done (@ target checked))
+                                       )
+                                  (when (= target-class "chkDone")
+                                        (chain console (log target-done))
+                                       (chain smackjack (toggle-done (chain target (get-attribute "data-name")) target-done callback)))))))
+                          ))
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
                  (dolist (item (with-connection (db-params)
                     (query (:select 'name 'done :from 'todo))))
                    (htm
                      (:li
+                       (:input :type "checkbox"  :data-name (first item) :checked (second item) :class "chkDone")
+                       (:spacer)
                        (fmt "~a" (first item))
                        (:a :class "text-danger" :href (format nil "/delete?name=~a" (url-encode (first item))) "Delete")))))
                (:form :class "form" :action "/todo-added" :method "post"
                     (:p "Add a new task:"
-                        (:input :class "form-control" :type "text" :name "name"))
+                        (:input :class "form-control" :type "text" :name "name" :required t :autofocus t))
                     (:p :class "text-right"
                         (:input :type "submit" :value (format nil "Add Todo #~d" (+ 1 (row-count))) :class "btn btn-success btn-lg")))))
 
@@ -101,4 +126,6 @@
     (redirect "/"))
 
 
+
+(setq *dispatch-table* (list 'dispatch-easy-handlers (create-ajax-dispatcher *ajax-processor*)))
 ;(start (make-instance 'easy-acceptor :port 3000))

@@ -4,7 +4,8 @@
     :depends-on (#:hunchentoot
                 #:cl-who
                 #:parenscript
-                #:postmodern)
+                #:postmodern
+                #:smackjack)
     :components ((:file "package")
                 (:module :src
                         :serial t
