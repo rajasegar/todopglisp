@@ -8,6 +8,10 @@
 (defun heroku-slug-dir ()
   (heroku-getenv "HOME"))
 
+(dotimes (i 40) (format t "*"))
+(print (heroku-getenv "DATABASE_URL"))
+(dotimes (i 40) (format t "*"))
+
 (defvar *heroku-pg-url* "postgres://quyzsdidqvupft:nwBYLXVX58EuDDPTQXZMc-fYsL@ec2-54-235-95-188.compute-1.amazonaws.com:5432/ddpe3h03js3ebm")
 
 (defun db-params ()
