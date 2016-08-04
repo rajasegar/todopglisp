@@ -1,8 +1,4 @@
-;(ql:quickload '(:cl-who :hunchentoot :parenscript :postmodern :smackjack))
-;(defpackage #:example (:use :cl :cl-who :hunchentoot :parenscript :postmodern :smackjack))
-
 (in-package :example)
-
 
 ;; Utils
 (defun heroku-getenv (target)
@@ -17,8 +13,8 @@
 (defun db-params ()
   "Heroku database url format is postgres://username:password@host:port/database_name"
   (let* (
-         ;(url (second (cl-ppcre:split "//" (heroku-getenv "DATABASE_URL"))))
-         (url (second (cl-ppcre:split "//" *heroku-pg-url*)))
+         (url (second (cl-ppcre:split "//" (heroku-getenv "DATABASE_URL"))))
+         ;(url (second (cl-ppcre:split "//" *heroku-pg-url*)))
          (user (first (cl-ppcre:split ":" (first (cl-ppcre:split "@" url)))))
          (password (second (cl-ppcre:split ":" (first (cl-ppcre:split "@" url)))))
          (host (first (cl-ppcre:split ":" (first (cl-ppcre:split "/" (second (cl-ppcre:split "@" url)))))))
@@ -34,8 +30,6 @@
         (query (:update 'todo :set 'done '$1 :where (:= 'name name)) done))
     (concatenate 'string "Todo status updated"))
 
-
-
 (defun add-todo (name)
   (with-connection (db-params)
       (query (:insert-into 'todo :set 'name name))))
@@ -49,7 +43,6 @@
             ((id :type serial :primary-key t)
              (name :type varchar :default "")
              (done :type boolean :default nil))))))
-
 
 (defmacro todo-page ((&key title script) &body body)
   `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
@@ -76,18 +69,15 @@
 (defun row-count ()
   (with-connection (db-params)
         (query (:select (:count '*) :from 'todo) :single)))
-
-
               
 ;; Handlers
-
 (define-easy-handler (app :uri "/") ()
     (todo-page (:title "TodoList"
-                :script 
-                (ps
+                :script (ps
                           (chain console (log "Hello"))
                           (defun callback (response)
                             (chain console (log response)))
+
                           (chain document  (add-event-listener "click" (lambda (event)
                                 ;(chain console (log event))
                                 (let* ((target (@ event target))
@@ -96,18 +86,27 @@
                                        )
                                   (when (= target-class "chkDone")
                                         (chain console (log target-done))
-                                       (chain smackjack (toggle-done (chain target (get-attribute "data-name")) target-done callback)))))))
-                          ))
+                                       (chain smackjack (toggle-done (chain target (get-attribute "data-name")) target-done callback)))
+                                  (when (= target-class "btnDelete")
+                                        (chain event (prevent-default))
+                                        (chain console (log "Delete button clicked"))
+                                        (chain smackjack (ajax-delete (chain target (get-attribute "data-id")) callback))
+                                        (let ((el (chain document (get-element-by-id (chain target (get-attribute "data-id"))))))
+                                        (chain (@ el parent-node) (remove-child el))))
+                                  
+                                  ))))))
                (:h4 :class "text-right" "Total items: " (:span (fmt "~A" (row-count))))
                (:ol
                  (dolist (item (with-connection (db-params)
-                    (query (:select 'name 'done :from 'todo))))
+                    (query (:select '* :from 'todo))))
                    (htm
-                     (:li
-                       (:input :type "checkbox"  :data-name (first item) :checked (second item) :class "chkDone")
+                     (:li :id (first item)
+                       (:input :type "checkbox"  :data-name (second item) :checked (third item) :class "chkDone")
                        (:spacer)
-                       (fmt "~a" (first item))
-                       (:a :class "text-danger" :href (format nil "/delete?name=~a" (url-encode (first item))) "Delete")))))
+                       (fmt "~a" (second item))
+                       ;(:button :class "btnDelete" :data-id (first item) "Delete")
+                       (:a :class "text-danger" :data-name (second item) :href (format nil "/delete?name=~a" (url-encode (second item))) "Delete")
+                       ))))
                (:form :class "form" :action "/todo-added" :method "post"
                     (:p "Add a new task:"
                         (:input :class "form-control" :type "text" :name "name" :required t :autofocus t))
@@ -125,7 +124,12 @@
         (query (:delete-from 'todo :where (:= 'name name))))
     (redirect "/"))
 
-
+(defun-ajax ajax-delete (id) (*ajax-processor* :callback-data :response-text)
+    (with-connection (db-params)
+        (query (:delete-from 'todo :where (:= 'id id))))
+    (concatenate 'string "Todo deleted with: " id))
 
 (setq *dispatch-table* (list 'dispatch-easy-handlers (create-ajax-dispatcher *ajax-processor*)))
-;(start (make-instance 'easy-acceptor :port 3000))
+
+(defun start-server()
+    (start (make-instance 'easy-acceptor :port 3000)))
