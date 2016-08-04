@@ -38,12 +38,14 @@
 (setf (html-mode) :html5)
 
 ;; Create Database Schema
-(with-connection (db-params)
-    (unless (table-exists-p "todo")
-        (query (:create-table todo
-            ((id :type serial :primary-key t)
-             (name :type varchar :default "")
-             (done :type boolean :default nil))))))
+(defun init-db ()
+    (with-connection (db-params)
+        (unless (table-exists-p "todo")
+            (query (:create-table todo
+                ((id :type serial :primary-key t)
+                 (name :type varchar :default "")
+                 (done :type boolean :default nil)))))))
+
 
 (defmacro todo-page ((&key title script) &body body)
   `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
@@ -123,6 +125,10 @@
     ; delete the item here
     (with-connection (db-params)
         (query (:delete-from 'todo :where (:= 'name name))))
+    (redirect "/"))
+
+(define-easy-handler (init-db :uri "/init-db") ()
+    (init-db)
     (redirect "/"))
 
 (defun-ajax ajax-delete (id) (*ajax-processor* :callback-data :response-text)
